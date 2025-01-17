@@ -1,0 +1,76 @@
+from collections import deque
+
+class Point:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+def cross_product(a, b, c):
+    return b.x * c.y - b.y * c.x - a.x * c.y + c.x * a.y + a.x * b.y - a.y * b.x
+
+def bfs_roads(graph, points, s, f):
+
+    visited= [[False]*(len(cur)+1) for cur in graph]
+    re = []
+
+    for ind in range(len(graph[s])):
+        if f in re :
+            break
+        else:
+            if points[graph[s][ind]].y + 1 != points[s].y:
+                re.append(s)
+                re.append(graph[s][ind])
+            else:
+                break
+
+        if not visited[s][ind]:
+            q = deque()
+            q.append((s, graph[s][ind]))
+            visited[s][ind] = True
+            while q:
+                road = q.popleft()
+                if re[-1] == f:
+                    return True, re
+                for u in range(len(graph[road[1]])):
+                    if not visited[road[1]][u]:
+
+                        if road[0] != graph[road[1]][u]:
+                            if cross_product(points[road[0]], points[road[1]], points[graph[road[1]][u]]) <= 0:
+                                visited[road[1]][u] = True
+                                q.append((road[1], graph[road[1]][u]))
+                                re.append(graph[road[1]][u])
+                                break
+
+    if len(re) == 0 or re[-1]!=f or re[0]!= s:
+       return False, []
+    else:
+        return True, re
+
+
+with open("input.txt", "r") as input_file:
+    N, M = map(int, input_file.readline().strip().split())
+
+    points = [None] * (N + 1)  # Координаты перекрёстков
+    graph = [[] for _ in range(N + 1)]  # Список смежности
+
+    for _ in range(M):
+        x1, y1, x2, y2, u, v = map(int, input_file.readline().strip().split())
+        points[u] = Point(x1, y1)
+        points[v] = Point(x2, y2)
+
+        graph[u].append(v)
+        graph[v].append(u)
+
+    s, f = map(int, input_file.readline().strip().split())
+
+    path_found, path = bfs_roads(graph, points, s, f)
+
+with open("output.txt", "w") as output_file:
+    if M == 0:
+        output_file.write("No\n")
+    else:
+        if path_found:
+            output_file.write("Yes\n")
+            output_file.write(" ".join(map(str, path)) + "\n")
+        else:
+            output_file.write("No\n")
