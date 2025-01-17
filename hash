@@ -1,0 +1,115 @@
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <algorithm>
+#include <unordered_map>
+
+using namespace std;
+
+int binsearch_array(vector<long long>& arr, long long el) {
+    int left = 0, right = arr.size();
+
+    // Поиск первого вхождения
+    while (left < right) {
+        int middle = (left + right) / 2;
+        if (arr[middle] < el) {
+            left = middle + 1;
+        }
+        else {
+            right = middle;
+        }
+    }
+
+    if (left < arr.size() && left >= 0 && arr[left] == el) {
+        return left;
+    }
+    else {
+        return -1;
+    }
+}
+
+// Функция для нахождения чисел
+vector<long long> findNums(int q, vector<long long> sum, vector<int> freq, int c) {
+    vector<long long> res(q, 0);
+    int c1 = 0;
+    int c2 = 0;
+    res[c1] = sum[c2] / 2;
+    freq[c2]--;
+    if (freq[c2] < 1) c2++;
+    c1++;
+    res[c1] = sum[c2] - res[0];
+    c1++;
+    freq[c2] -= 2;
+    if (freq[c2] < 1) c2++;
+
+    while (c1 < q && c2 < c) {
+        int pos = binsearch_array(sum, res[c1 - 1] * 2);
+        if (pos != -1) {
+            freq[pos]--;
+        }
+        while (c2 < c && freq[c2] < 1) c2++;
+        res[c1] = sum[c2] - res[0];
+        freq[c2] -= 2;
+        while (c2 < c && freq[c2] < 1) c2++;
+        for (int m = 1; m < c1; m++) {
+            if (c1 < res.size() && c1 >= 0) {
+                int t = binsearch_array(sum, res[c1] + res[m]);
+                if (t >= 0 && t < c) {
+                    freq[t] -= 2;
+                }
+            }
+        }
+        c1++;
+    }
+
+    sort(begin(res), end(res));
+
+    return res;
+}
+
+int main() {
+    ifstream file_in("input.txt");
+    ofstream file_out("output.txt");
+
+    int n;
+    file_in >> n;
+    if (n == 1) {
+        long long b;
+        file_in >> b;
+        file_out << b / 2;
+    }
+    else {
+        vector<long long> sums;
+
+        // Чтение данных
+        for (int i = 0; i < n * n; i++) {
+            long long b;
+            file_in >> b;
+            sums.push_back(b);
+        }
+
+        // Сортировка массива
+        sort(sums.begin(), sums.end());
+
+        // Подсчет частот
+        vector<long long> unique_sums;
+        vector<int> frequencies;
+
+        for (size_t i = 0; i < sums.size(); i++) {
+            if (i == 0 || sums[i] != sums[i - 1]) {
+                unique_sums.push_back(sums[i]);
+                frequencies.push_back(1);
+            } else {
+                frequencies.back()++;
+            }
+        }
+
+        vector<long long> numbers = findNums(n, unique_sums, frequencies, unique_sums.size());
+
+        for (const auto& number : numbers) {
+            file_out << number << "\n";
+        }
+    }
+
+    return 0;
+}
