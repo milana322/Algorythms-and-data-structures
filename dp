@@ -1,0 +1,67 @@
+#include <iostream>
+#include <vector>
+#include <fstream>
+#include <limits>
+
+using namespace std;
+
+long long minsum(vector<int>& fr, int m, int n) {
+    vector<vector<long long>> dp(n, vector<long long>(m, numeric_limits<long long>::max()));
+
+    if (n >= m) {
+        long long sum = 0;
+        for (int x : fr) sum += x;
+        return sum;
+    }
+
+    vector<vector<long long>> matr(m, vector<long long>(m, 0));
+
+    for (int i = 0; i < m; i++) {
+        matr[i][i] = fr[i];
+        for (int j = i + 1; j < m; j++) {
+            matr[i][j] = matr[i][j - 1] + fr[j] * (j - i + 1);
+        }
+    }
+
+    dp[0][0] = fr[0];
+    int q = m - n;
+
+    for (int j = 1; j <= q; j++) {
+        dp[0][j] = matr[0][j];
+    }
+
+    for (int i = 1; i < n; i++) {
+        for (int j = i; j <= i + q; j++) {
+            for (int k = i - 1; k < j; k++) {
+                long long cur = matr[k + 1][j] + dp[i - 1][k];
+                if (cur < dp[i][j]) {
+                    dp[i][j] = cur;
+                }
+            }
+        }
+    }
+
+    return dp[n - 1][m - 1];
+}
+
+int main() {
+    vector<int> freq;
+    ifstream file_in("in.txt");
+    int nn, q;
+
+    file_in >> nn; // клавиш на клавиатуре
+    file_in >> q;  // число букв алфавита
+
+    for (int i = 0; i < q; i++) {
+        int val; // частота буквы
+        file_in >> val;
+        freq.push_back(val);
+    }
+    file_in.close();
+
+    long long result = minsum(freq, q, nn); 
+
+    ofstream file_out("out.txt");
+    file_out << result << endl;
+    file_out.close();
+}
