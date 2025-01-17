@@ -1,0 +1,30 @@
+def bsearch(arr, n, req):
+    for el in req:
+        left, right = 0, n
+        while left < right:
+            middle = (left + right) // 2
+            if arr[middle] < el:
+                left = middle + 1
+            else:
+                right = middle
+    
+        l = left  
+        if l < n and arr[l] == el:
+            right = n 
+            while left < right:
+                middle = (left + right) // 2
+                if arr[middle] == el: #? <=
+                    left = middle + 1
+                else:
+                    right = middle
+            print(f"{1} {l} {right}")
+        else:
+            print(f"{0} {l} {l}")
+    
+  
+
+num1 = int(input()) 
+mas = list(map(int, input().split()))
+input()
+requests = list(map(int, input().split()))
+bsearch(mas, num1,  requests)
